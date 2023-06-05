@@ -34,6 +34,7 @@ public class PlayerController : MonoBehaviour
     bool thrown = false;
 
     private void Awake() {
+        //Application.targetFrameRate = 60;
         inputManager = InputManager.Instance;
     }
 
