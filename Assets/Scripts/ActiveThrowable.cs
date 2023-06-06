@@ -23,7 +23,7 @@ public class ActiveThrowable : MonoBehaviour
             RaycastHit hit;
             if (Physics.Raycast(transform.position, Vector3.down, out hit, 99, PC.collisionLayerMask)) {
                 if(myDropshadow != null) {
-                    myDropshadow.position = hit.point + Vector3.up * 0.256f;
+                    myDropshadow.position = hit.point + Vector3.up * 0.0556f;
                 }
             }
         }

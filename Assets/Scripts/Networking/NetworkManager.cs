@@ -14,6 +14,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public List<Transform> spawns;
 
+    public PlayerController PC;
+
     void Start()
     {
         if (forceMobile)
@@ -48,6 +50,17 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public override void OnCreatedRoom() {
         outputString.text += "room created " + this.ToString() + '\n';
+    }
+    public override void OnJoinedRoom() {
+        outputString.text += "room joined " + this.ToString() + '\n';
+
+        if (isHost) {
+
+        } else {
+            PC.enabled = true;
+            outputString.text += "owning player: " + PhotonNetwork.LocalPlayer.ActorNumber.ToString() + this.ToString() + '\n';
+
+        }
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message) {

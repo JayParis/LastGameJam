@@ -885,7 +885,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: dddd
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -895,7 +895,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontColor: {r: 0, g: 0, b: 0, a: 1}
+  m_fontColor: {r: 0, g: 0, b: 0, a: 0.5372549}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -7133,6 +7133,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c9ef0b855f5a5440b3013b03e99a740, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  forceMobile: 0
   outputString: {fileID: 164527104}
   spawns:
   - {fileID: 1129726059}
@@ -7167,6 +7168,7 @@ MonoBehaviour:
   - {fileID: 1421022098}
   - {fileID: 1682668517}
   - {fileID: 2108478702}
+  PC: {fileID: 4046017157955314526}
 --- !u!1001 &1616847805
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9934,6 +9936,11 @@ PrefabInstance:
       objectReference: {fileID: 1311456355}
     - target: {fileID: 4046017158644229940, guid: 4089997aadf9f23478537917c9e8bd65,
         type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4046017158644229940, guid: 4089997aadf9f23478537917c9e8bd65,
+        type: 3}
       propertyPath: dropshadow
       value: 
       objectReference: {fileID: 170662694}
@@ -9966,7 +9973,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 4046017157955314525}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 44b060aa2e9f36649ae13a9e5dceb051, type: 3}
   m_Name: 
