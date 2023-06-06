@@ -8,14 +8,21 @@ using TMPro;
 
 public class NetworkManager : MonoBehaviourPunCallbacks
 {
+    public bool forceMobile = false;
     public static bool isHost = true;
     public TextMeshProUGUI outputString;
 
+    public List<Transform> spawns;
+
     void Start()
     {
-        isHost = SystemInfo.deviceType == DeviceType.Desktop;
+        if (forceMobile)
+            isHost = false;
+        else
+            isHost = SystemInfo.deviceType == DeviceType.Desktop;
+        
         outputString.text += "isHost: " + isHost.ToString() + '\n';
-        //ConnectToGame();
+        ConnectToGame();
     }
 
     void ConnectToGame() {
@@ -29,7 +36,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         outputString.text += "connected to server" + '\n';
         if (PhotonNetwork.IsConnected) {
             RoomOptions options = new RoomOptions();
-            options.MaxPlayers = 4;
+            options.MaxPlayers = 20;
             PhotonNetwork.JoinOrCreateRoom("MainRoom", options, TypedLobby.Default);
         }
     }

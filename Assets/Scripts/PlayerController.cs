@@ -7,6 +7,8 @@ using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
+    public NetworkManager NM;
+
     public AnimationCurve throwRemap;
     public float lateralSensitivity = 1f;
 
@@ -47,6 +49,17 @@ public class PlayerController : MonoBehaviour
 
     float zoomFoV = 60f;
 
+    float camHeight = 3f;
+
+    int bounceMarkID = 0;
+    float bounceMarkDelay = 0f;
+    public Transform bouncemark_1;
+    public Transform bouncemark_2;
+    public Transform bouncemark_3;
+
+    public LayerMask collisionLayerMask;
+    public GameObject dropshadow;
+
     private void Awake() {
         //Application.targetFrameRate = 60;
         inputManager = InputManager.Instance;
@@ -59,7 +72,14 @@ public class PlayerController : MonoBehaviour
             speeds.Add(0);
         }
 
-        Debug.Log(speeds.Count);
+
+        bouncemark_1.transform.parent = null;
+        bouncemark_2.transform.parent = null;
+        bouncemark_3.transform.parent = null;
+
+        bouncemark_1.eulerAngles = Vector3.zero;
+        bouncemark_2.eulerAngles = Vector3.zero;
+        bouncemark_3.eulerAngles = Vector3.zero;
     }
 
     void Update()
@@ -91,6 +111,10 @@ public class PlayerController : MonoBehaviour
         if (touchUpDelay > 0)
             touchUpDelay -= Time.deltaTime;
 
+        if(bounceMarkDelay > 0) {
+            bounceMarkDelay -= Time.deltaTime;
+        }
+
         if (camFollow) {
             Camera.main.transform.rotation = Quaternion.Lerp(Camera.main.transform.rotation, thrown ? travelCamPos.rotation : throwableCamPos.rotation, Time.deltaTime * 15f);
         } else {
@@ -100,22 +124,23 @@ public class PlayerController : MonoBehaviour
         //Debug---
 
         if (Input.GetKeyDown(KeyCode.Y)) {
-            camFollow = !camFollow;
+            SetSpawn(Random.Range(0,32));
         }
 
         lookCamPos.LookAt(throwable.transform.position);
 
         if (!camFollow && thrown)
-            zoomFoV = Mathf.Lerp(zoomFoV, 32f, Time.deltaTime * 2.5f);
+            zoomFoV = Mathf.Lerp(zoomFoV, 32f, Time.deltaTime * 0.5f);
         else
             zoomFoV = 60f;
 
         Camera.main.fieldOfView = Mathf.Lerp(Camera.main.fieldOfView, thrown ? zoomFoV : 60f, Time.deltaTime * 10f);
+        camHeight = Mathf.Lerp(camHeight, thrown ? 1f : 3f, Time.deltaTime * 8f);
     }
 
     private void LateUpdate() {
         if (camFollow) {
-            Camera.main.transform.position = throwable.position + transform.parent.TransformDirection(new Vector3(0, 3f, -3f));
+            Camera.main.transform.position = throwable.position + transform.parent.TransformDirection(new Vector3(0, camHeight, -3f));
         } else {
             Camera.main.transform.position = throwableStartPos.position + transform.parent.TransformDirection(new Vector3(0, 3f, -3f));
         }
@@ -177,7 +202,6 @@ public class PlayerController : MonoBehaviour
 
             //float finalSpeed = (normDragPos - normSpeedPos).magnitude * 40.995f;
 
-            Debug.Log(finalSpeed);
 
             if (finalSpeed > 0.2f) {
 
@@ -205,7 +229,12 @@ public class PlayerController : MonoBehaviour
     }
 
     public void Throw(float speed, float xVal) {
-        throwable.GetComponent<Collider>().enabled = true;
+
+        foreach (Collider col in throwable.GetComponentsInChildren<Collider>()) {
+            col.enabled = true;
+        }
+
+        //throwable.GetComponent<Collider>().enabled = true;
         throwable.constraints = RigidbodyConstraints.None;
         throwable.velocity = Camera.main.transform.TransformDirection(new Vector3(xVal * -0.59f * lateralSensitivity, 0.56f, 1f)) * 12f * throwRemap.Evaluate(speed);
         throwable.angularVelocity = Vector3.one * speed;
@@ -213,6 +242,16 @@ public class PlayerController : MonoBehaviour
     }
 
     public void ResetThrowable() {
+
+        bouncemark_1.position = Vector3.zero;
+        bouncemark_2.position = Vector3.zero;
+        bouncemark_3.position = Vector3.zero;
+        bouncemark_1.parent = null;
+        bouncemark_2.parent = null;
+        bouncemark_3.parent = null;
+        bounceMarkID = 0;
+
+        throwable.GetComponent<ActiveThrowable>().Deactivate();
 
         GameObject newThrowable = Instantiate(nextItem, throwableStartPos.position, throwableStartPos.rotation);
         throwable = newThrowable.GetComponent<Rigidbody>();
@@ -223,5 +262,47 @@ public class PlayerController : MonoBehaviour
         throwable.velocity = Vector3.zero;
         throwable.angularVelocity = Vector3.zero;
         thrown = false;
+
+        throwable.GetComponent<ActiveThrowable>().PC = gameObject.GetComponent<PlayerController>();
+        GameObject newDropshadow = Instantiate(dropshadow, Vector3.zero, dropshadow.transform.rotation, dropshadow.transform.parent);
+        throwable.GetComponent<ActiveThrowable>().myDropshadow = newDropshadow.transform;
     }
+
+    public void Bounce(Collision col) {
+        if (bounceMarkDelay <= 0) {
+
+            float heightOffset = 0.25f;
+            switch (bounceMarkID) {
+                case 0:
+                    bouncemark_1.position = col.contacts[0].point + new Vector3(0,heightOffset, 0);
+                    bouncemark_1.transform.parent = col.transform;
+                    Debug.Log("Bounce " + Time.time);
+
+                    break;
+                case 1:
+                    bouncemark_2.position = col.contacts[0].point + new Vector3(0, heightOffset, 0);
+                    bouncemark_2.transform.parent = col.transform;
+                    break;
+                case 2:
+                    bouncemark_3.position = col.contacts[0].point + new Vector3(0, heightOffset, 0);
+                    bouncemark_3.transform.parent = col.transform;
+                    break;
+            }
+
+            bounceMarkID++;
+            bounceMarkDelay = 0.05f;
+
+        }
+    }
+
+    public void SetSpawn(int playerID) {
+        transform.parent.eulerAngles = new Vector3(transform.parent.eulerAngles.x, NM.spawns[playerID].eulerAngles.y, transform.parent.eulerAngles.z);
+    }
+
+    //UI ----
+
+    public void ToggleCamFollow() {
+        camFollow = !camFollow;
+    }
+
 }
