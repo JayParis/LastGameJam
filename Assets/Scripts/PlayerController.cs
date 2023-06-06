@@ -38,8 +38,14 @@ public class PlayerController : MonoBehaviour
     public Transform throwableStartPos;
     public Transform throwableCamPos;
     public Transform travelCamPos;
+    public Transform lookCamPos;
+
+    public GameObject nextItem;
 
     bool thrown = false;
+    public bool camFollow = false;
+
+    float zoomFoV = 60f;
 
     private void Awake() {
         //Application.targetFrameRate = 60;
@@ -85,20 +91,34 @@ public class PlayerController : MonoBehaviour
         if (touchUpDelay > 0)
             touchUpDelay -= Time.deltaTime;
 
-        Camera.main.transform.rotation = Quaternion.Lerp(Camera.main.transform.rotation, thrown ? travelCamPos.rotation : throwableCamPos.rotation, Time.deltaTime * 15f);
+        if (camFollow) {
+            Camera.main.transform.rotation = Quaternion.Lerp(Camera.main.transform.rotation, thrown ? travelCamPos.rotation : throwableCamPos.rotation, Time.deltaTime * 15f);
+        } else {
+            Camera.main.transform.rotation = Quaternion.Lerp(Camera.main.transform.rotation, thrown ? lookCamPos.rotation : throwableCamPos.rotation, Time.deltaTime * 5f);
+        }
 
         //Debug---
 
         if (Input.GetKeyDown(KeyCode.Y)) {
-            ResetThrowable();
-            Debug.Log("Debug");
+            camFollow = !camFollow;
         }
 
-        Camera.main.fieldOfView = Mathf.Lerp(Camera.main.fieldOfView, thrown ? 72f : 60f, Time.deltaTime * 10f);
+        lookCamPos.LookAt(throwable.transform.position);
+
+        if (!camFollow && thrown)
+            zoomFoV = Mathf.Lerp(zoomFoV, 32f, Time.deltaTime * 2.5f);
+        else
+            zoomFoV = 60f;
+
+        Camera.main.fieldOfView = Mathf.Lerp(Camera.main.fieldOfView, thrown ? zoomFoV : 60f, Time.deltaTime * 10f);
     }
 
     private void LateUpdate() {
-        Camera.main.transform.position = throwable.position + transform.parent.TransformDirection(new Vector3(0, 3f, -3f));
+        if (camFollow) {
+            Camera.main.transform.position = throwable.position + transform.parent.TransformDirection(new Vector3(0, 3f, -3f));
+        } else {
+            Camera.main.transform.position = throwableStartPos.position + transform.parent.TransformDirection(new Vector3(0, 3f, -3f));
+        }
         //Vector3 targetPos = throwable.position + transform.parent.TransformDirection(new Vector3(0, 3f, -3f));
         //Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, targetPos, Time.deltaTime * 35f);
     }
@@ -185,6 +205,7 @@ public class PlayerController : MonoBehaviour
     }
 
     public void Throw(float speed, float xVal) {
+        throwable.GetComponent<Collider>().enabled = true;
         throwable.constraints = RigidbodyConstraints.None;
         throwable.velocity = Camera.main.transform.TransformDirection(new Vector3(xVal * -0.59f * lateralSensitivity, 0.56f, 1f)) * 12f * throwRemap.Evaluate(speed);
         throwable.angularVelocity = Vector3.one * speed;
@@ -192,6 +213,10 @@ public class PlayerController : MonoBehaviour
     }
 
     public void ResetThrowable() {
+
+        GameObject newThrowable = Instantiate(nextItem, throwableStartPos.position, throwableStartPos.rotation);
+        throwable = newThrowable.GetComponent<Rigidbody>();
+
         throwable.transform.position = throwableStartPos.position;
         throwable.transform.rotation = throwableStartPos.rotation;
         throwable.constraints = RigidbodyConstraints.FreezeAll;
