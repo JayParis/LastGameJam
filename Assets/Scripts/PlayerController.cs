@@ -25,6 +25,10 @@ public class PlayerController : MonoBehaviour
     float speedCheckInterval = 0f;
     float dragSpeed = 0;
 
+    List<float> speeds = new List<float>();
+    const int avgCapacity = 20;
+
+
     public TextMeshProUGUI outputText;
 
     public Rigidbody throwable;
@@ -41,7 +45,12 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        
+        speeds = new List<float>();
+        for (int i = 0; i < avgCapacity; i++) {
+            speeds.Add(0);
+        }
+
+        Debug.Log(speeds.Count);
     }
 
     void Update()
@@ -49,11 +58,23 @@ public class PlayerController : MonoBehaviour
         if (speedCheckInterval > 0f)
             speedCheckInterval -= Time.deltaTime;
         else {
-            dragSpeed = (dragPos - speedPos).magnitude * 0.005f;
+
+            Vector2 normDragPos = dragPos / new Vector2(Screen.width, Screen.height);
+            Vector2 normTouchPos = tapPos / new Vector2(Screen.width, Screen.height);
+            Vector2 normSpeedPos = speedPos / new Vector2(Screen.width, Screen.height);
+
+            for (int i = 0; i < speeds.Count; i++) {
+                if (speeds[i] == 0) {
+                    speeds[i] = (normDragPos - normSpeedPos).magnitude * 40.995f;
+                    break;
+                }
+            }
+
+            //dragSpeed = (dragPos - speedPos).magnitude * 0.005f;
             outputText.text = "Mag: " + dragSpeed.ToString();
             speedPos = dragPosRI.transform.position;
             speedPosRI.transform.position = speedPos;
-            speedCheckInterval = 0.025f;//0.05f
+            speedCheckInterval = 0.025f / 2f;//0.05f
         }
 
         if (touchDownDelay > 0)
@@ -98,10 +119,18 @@ public class PlayerController : MonoBehaviour
             tapPos = screenPosition;
             touchPosRI.transform.position = screenPosition;
             dragPosRI.transform.position = screenPosition;
+            speedPos = screenPosition;
+            speedPosRI.transform.position = screenPosition;
+            
+            for (int i = 0; i < speeds.Count; i++) {
+                speeds[i] = 0f;
+            }
 
             if (thrown) {
                 ResetThrowable();
             }
+
+            
 
             touchDownDelay = 0.05f;
         }
@@ -110,12 +139,30 @@ public class PlayerController : MonoBehaviour
     public void TouchUp(Vector2 screenPosition, float time) {
         if (Application.isPlaying && touchUpDelay <= 0) {
             dragDelta = Vector2.zero;
-            Debug.Log(dragSpeed);
 
-            if (dragSpeed > 0.2f) {
-                float xVarCalc = (tapPos.x - dragPos.x) / Screen.width;
-                Debug.Log(xVarCalc);
-                Throw(dragSpeed, xVarCalc);
+            Vector2 normDragPos = dragPos / new Vector2(Screen.width, Screen.height);
+            Vector2 normTouchPos = tapPos / new Vector2(Screen.width, Screen.height);
+            Vector2 normSpeedPos = speedPos / new Vector2(Screen.width, Screen.height);
+
+            float avgSpeed = 0f;
+            for (int i = 0; i < speeds.Count; i++) {
+                if(speeds[i] != 0)
+                    avgSpeed += speeds[i];
+
+            }
+            float finalSpeed = avgSpeed / (float)avgCapacity;
+
+            //float finalSpeed = (normDragPos - normSpeedPos).magnitude * 40.995f;
+
+            Debug.Log(finalSpeed);
+
+            if (finalSpeed > 0.2f) {
+
+                //float xVarCalc = (tapPos.x - dragPos.x) / Screen.width;
+                float xVarCalc = (normTouchPos.x - normDragPos.x);
+
+
+                Throw(finalSpeed, xVarCalc);
             }
 
             touchUpDelay = 0.05f;
@@ -136,7 +183,7 @@ public class PlayerController : MonoBehaviour
 
     public void Throw(float speed, float xVal) {
         throwable.constraints = RigidbodyConstraints.None;
-        throwable.velocity = Camera.main.transform.TransformDirection(new Vector3(xVal * -0.47f, 0.56f, 1f)) * 12f * speed;
+        throwable.velocity = Camera.main.transform.TransformDirection(new Vector3(xVal * -0.59f, 0.56f, 1f)) * 12f * speed;
         throwable.angularVelocity = Vector3.one * speed;
         thrown = true;
     }
