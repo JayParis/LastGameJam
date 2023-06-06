@@ -1356,17 +1356,26 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 2
-      outSlope: 2
+      inSlope: 3.1417937
+      outSlope: 3.1417937
       tangentMode: 34
       weightedMode: 0
       inWeight: 0
       outWeight: 0.33333334
     - serializedVersion: 3
-      time: 1
-      value: 2
-      inSlope: 2
-      outSlope: 2
+      time: 0.49994755
+      value: 1.5707321
+      inSlope: 3.4330354
+      outSlope: 3.4330354
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 0.69576216
+      value: 2.3
+      inSlope: 3.724277
+      outSlope: 3.724277
       tangentMode: 34
       weightedMode: 0
       inWeight: 0.33333334
@@ -1374,7 +1383,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  lateralSensitivity: 1
+  lateralSensitivity: 1.8
   touchPosRI: {fileID: 292220364}
   dragPosRI: {fileID: 1311456355}
   speedPosRI: {fileID: 213860258}
