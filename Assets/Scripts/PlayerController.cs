@@ -14,6 +14,7 @@ public class PlayerController : MonoBehaviour
 
     private Vector2 tapPos;
     private Vector2 dragPos;
+    private Vector2 speedPos;
 
     private Vector2 dragDelta;
 
@@ -48,9 +49,10 @@ public class PlayerController : MonoBehaviour
         if (speedCheckInterval > 0f)
             speedCheckInterval -= Time.deltaTime;
         else {
-            dragSpeed = (dragPosRI.transform.position - speedPosRI.transform.position).magnitude * 0.005f;
+            dragSpeed = (dragPos - speedPos).magnitude * 0.005f;
             outputText.text = "Mag: " + dragSpeed.ToString();
-            speedPosRI.transform.position = dragPosRI.transform.position;
+            speedPos = dragPosRI.transform.position;
+            speedPosRI.transform.position = speedPos;
             speedCheckInterval = 0.025f;//0.05f
         }
 
@@ -93,7 +95,6 @@ public class PlayerController : MonoBehaviour
 
     public void TouchDown(Vector2 screenPosition, float time) {
         if (Application.isPlaying && touchDownDelay <= 0) {
-
             tapPos = screenPosition;
             touchPosRI.transform.position = screenPosition;
             dragPosRI.transform.position = screenPosition;
@@ -109,8 +110,9 @@ public class PlayerController : MonoBehaviour
     public void TouchUp(Vector2 screenPosition, float time) {
         if (Application.isPlaying && touchUpDelay <= 0) {
             dragDelta = Vector2.zero;
+            Debug.Log(dragSpeed);
 
-            if(dragSpeed > 0.2f) {
+            if (dragSpeed > 0.2f) {
                 float xVarCalc = (tapPos.x - dragPos.x) / Screen.width;
                 Debug.Log(xVarCalc);
                 Throw(dragSpeed, xVarCalc);

@@ -15,7 +15,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     {
         isHost = SystemInfo.deviceType == DeviceType.Desktop;
         outputString.text += "isHost: " + isHost.ToString() + '\n';
-        ConnectToGame();
+        //ConnectToGame();
     }
 
     void ConnectToGame() {
