@@ -7,6 +7,9 @@ using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
+    public AnimationCurve throwRemap;
+    public float lateralSensitivity = 1f;
+
     private InputManager inputManager;
 
     float touchDownDelay = 0.05f;
@@ -183,7 +186,7 @@ public class PlayerController : MonoBehaviour
 
     public void Throw(float speed, float xVal) {
         throwable.constraints = RigidbodyConstraints.None;
-        throwable.velocity = Camera.main.transform.TransformDirection(new Vector3(xVal * -0.59f, 0.56f, 1f)) * 12f * speed;
+        throwable.velocity = Camera.main.transform.TransformDirection(new Vector3(xVal * -0.59f * lateralSensitivity, 0.56f, 1f)) * 12f * throwRemap.Evaluate(speed);
         throwable.angularVelocity = Vector3.one * speed;
         thrown = true;
     }
