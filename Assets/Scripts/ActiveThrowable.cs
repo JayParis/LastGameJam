@@ -6,7 +6,7 @@ public class ActiveThrowable : MonoBehaviour
 {
     public PlayerController PC;
     bool isActive = true;
-    bool isTeam_1 = false;
+    public bool isTeam_1 = false;
 
     public Transform myDropshadow;
     public Rigidbody rb;
@@ -58,6 +58,7 @@ public class ActiveThrowable : MonoBehaviour
         isTeam_1 = itemIsTeam_1;
         foreach (Renderer Rend in GetComponentsInChildren<Renderer>()) {
             Rend.material.color = isTeam_1 ? NetworkManager.team_1_Colour : NetworkManager.team_2_Colour;
+            Rend.material.SetColor("_EmissionColor", isTeam_1 ? NetworkManager.team_1_Colour : NetworkManager.team_2_Colour);
         }
     }
 }

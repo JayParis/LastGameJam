@@ -260,7 +260,7 @@ public class PlayerController : MonoBehaviour
 
 
         GameObject newThrowable = PhotonNetwork.Instantiate("RugbyBall", throwableStartPos.position, throwableStartPos.rotation);
-        //newThrowable.GetComponent<Rigidbody>();
+        newThrowable.tag = NetworkManager.isTeam_1 ? "Team_1" : "Team_2";
         throwable = newThrowable.GetComponent<Rigidbody>();
         //newThrowable.transform.parent = NM.thrownItems[NetworkManager.myPlayerID - 1].transform;
 
@@ -274,6 +274,7 @@ public class PlayerController : MonoBehaviour
         throwable.GetComponent<ActiveThrowable>().PC = gameObject.GetComponent<PlayerController>();
         GameObject newDropshadow = Instantiate(dropshadow, Vector3.zero, dropshadow.transform.rotation, dropshadow.transform.parent);
         throwable.GetComponent<ActiveThrowable>().myDropshadow = newDropshadow.transform;
+        throwable.GetComponent<ActiveThrowable>().SetIsTeam_1(NetworkManager.isTeam_1);
     }
 
     public void Bounce(Collision col) {

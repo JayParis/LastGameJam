@@ -131,6 +131,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PC: {fileID: 0}
+  isTeam_1: 0
   myDropshadow: {fileID: 0}
   rb: {fileID: 0}
 --- !u!114 &-4687081324789085030

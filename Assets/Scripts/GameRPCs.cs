@@ -22,6 +22,13 @@ public class GameRPCs : MonoBehaviour
 
     }
 
+    public void SyncScore(int T1_Score, int T2_Score) {
+
+        PhotonView photonView = PhotonView.Get(this);
+        photonView.RPC("SyncScoreRPC", RpcTarget.All, T1_Score, T2_Score);
+
+    }
+
 
     [PunRPC]
     void FireShotRPC(int playerID, int throwableID) {
@@ -37,6 +44,13 @@ public class GameRPCs : MonoBehaviour
         if (!NetworkManager.isHost) {
             NM.SyncTableRotations(outRot,midRot,inRot);
         }
-        Debug.Log("SyncTable");
+        //Debug.Log("SyncTable");
+    }
+
+    [PunRPC]
+    void SyncScoreRPC(int T1_Score,int T2_Score) {
+        NetworkManager.team_1_ScoreStatic = T1_Score;
+        NetworkManager.team_2_ScoreStatic = T2_Score;
+        //Debug.Log("SyncTable");
     }
 }

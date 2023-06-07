@@ -34,6 +34,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public static int colourID = 0;
     public static Color team_1_Colour;
     public static Color team_2_Colour;
+    public static int team_1_ScoreStatic = 0;
+    public static int team_2_ScoreStatic = 0;
 
     //Menus
     public Gradient menuGrad;
@@ -53,6 +55,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     float playTransitionTime = 0f;
     bool hasSetupPC = false;
+    bool hasSetupFirstThrowable = false;
 
     //Table
 
@@ -62,8 +65,16 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public Transform tiltPivot;
 
     //Score Bar
-    public RawImage scoreBar;
+    public RawImage scoreBar_Top;
+    public RawImage scoreBar_Mid;
+    public RawImage scoreBar_Bottom;
 
+    public Transform barTilt_L;
+    public Transform barTilt_R;
+
+    float testBarVal = 0f;
+
+    public Transform homeAwayPivot;
 
     void Start()
     {
@@ -246,12 +257,62 @@ public class NetworkManager : MonoBehaviourPunCallbacks
                     PC.throwableStartPos.position + PC.transform.parent.TransformDirection(new Vector3(0, 3f, -3f)), Time.deltaTime * 3.6f);
                 Camera.main.transform.rotation = Quaternion.Lerp(Camera.main.transform.rotation, PC.throwableCamPos.rotation, Time.deltaTime * 3.6f);
                 RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0f, Time.deltaTime * 5f);
+
+                if(playTransitionTime > 1f && !hasSetupFirstThrowable) {
+                    PC.ResetThrowable();
+                    hasSetupFirstThrowable = true;
+                }
+
                 if(playTransitionTime > 3f && !hasSetupPC) {
                     PC.enabled = true;
                     RenderSettings.fogDensity = 0f;
                     hasSetupPC = true;
                 }
             }
+
+            //Bar UI
+        }
+
+        if((team_1_ScoreStatic + team_2_ScoreStatic) > 5 || 1 == 1) {
+            float biggest = 0;
+            float smallest = 0;
+            bool smallestIsTeam_1 = false;
+            if (team_1_ScoreStatic > team_2_ScoreStatic) {
+                biggest = team_1_ScoreStatic;
+                smallest = team_2_ScoreStatic;
+                smallestIsTeam_1 = false;
+            } else if (team_2_ScoreStatic > team_1_ScoreStatic) {
+                biggest = team_2_ScoreStatic;
+                smallest = team_1_ScoreStatic;
+                smallestIsTeam_1 = true;
+            } else if(team_2_ScoreStatic == team_1_ScoreStatic) {
+                biggest = team_1_ScoreStatic;
+                smallest = team_2_ScoreStatic;
+                smallestIsTeam_1 = false;
+            }
+
+            //float tilt_t = 0.025f;
+            //Debug.Log(testBarVal);
+            //float tilt_t = Mathf.Clamp01(testBarVal);
+            float tilt_t = (Mathf.Sin(Time.time * 0.5f) + 1) / 2f       ;
+
+            Quaternion tilt_q_1 = Quaternion.Lerp(barTilt_L.rotation, barTilt_R.rotation, tilt_t);
+            Quaternion tilt_q_2 = Quaternion.Lerp(barTilt_L.rotation, barTilt_R.rotation, 1-tilt_t);
+
+            scoreBar_Top.transform.rotation = Quaternion.Lerp(scoreBar_Top.transform.rotation, tilt_q_1, Time.deltaTime * 15f);
+            scoreBar_Bottom.transform.rotation = Quaternion.Lerp(scoreBar_Bottom.transform.rotation, tilt_q_2, Time.deltaTime * 15f);
+
+            scoreBar_Top.transform.GetChild(0).rotation = TTC_CentrePos.rotation;
+            scoreBar_Mid.transform.GetChild(0).rotation = TTC_CentrePos.rotation;
+            scoreBar_Bottom.transform.GetChild(0).rotation = TTC_CentrePos.rotation;
+
+            Vector3 finalBarPos = new Vector3(Screen.width * (1 - tilt_t), scoreBar_Mid.transform.position.y, scoreBar_Mid.transform.position.z);
+
+            scoreBar_Top.transform.GetChild(0).position = finalBarPos;
+            scoreBar_Mid.transform.GetChild(0).position = finalBarPos;
+            scoreBar_Bottom.transform.GetChild(0).position = finalBarPos;
+
+            homeAwayPivot.position = finalBarPos;
         }
 
 
@@ -287,6 +348,10 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         if (Input.GetKey(KeyCode.S)) {
             GameObject.Find("DBPiv").transform.GetChild(0).Translate(Vector3.back * Time.deltaTime * 10f);
         }
+        if (Input.GetKey(KeyCode.UpArrow))
+            testBarVal += Time.deltaTime;
+        if (Input.GetKey(KeyCode.DownArrow))
+            testBarVal -= Time.deltaTime;
     }
 
         public void SyncTableRotations(Quaternion outRot, Quaternion midRot, Quaternion inRot) {
