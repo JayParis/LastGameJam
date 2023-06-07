@@ -123,7 +123,7 @@ Material:
     - _RemapLines: {r: -1, g: 0.5, b: 0, a: 0}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}
     - _Tiling: {r: 1, g: 1, b: 0, a: 0}
-    - _Tint: {r: 0.43294996, g: 0.37068352, b: 0.9245283, a: 1}
+    - _Tint: {r: 0.40574938, g: 0.47407055, b: 0.8867924, a: 1}
   m_BuildTextureStacks: []
 --- !u!114 &8513873010047745488
 MonoBehaviour:
