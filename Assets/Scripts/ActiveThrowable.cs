@@ -45,6 +45,9 @@ public class ActiveThrowable : MonoBehaviour
 
             rb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
             isActive = false;
+
+            if (collision.contacts[0].otherCollider.GetComponent<ScoreVal>() != null)
+                transform.parent = collision.contacts[0].otherCollider.transform;
         }
     }
 

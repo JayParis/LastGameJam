@@ -99,6 +99,10 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public GameObject nameNotch;
 
     public Transform spectatePos;
+    public Transform hostPivot;
+
+    public Transform MVPView;
+    Vector3 pivotStartPos;
 
     void Start()
     {
@@ -113,6 +117,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         gradSamplePoint = Random.Range(0f,0.99f);
         TTS_BG.material.SetFloat("_Lightness", 1f);
         TTS_BG.material.SetFloat("_TeamSelect", 0f);
+
+        pivotStartPos = hostPivot.position;
     }
 
     void ConnectToGame() {
@@ -187,6 +193,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
             gameStarted = true;
 
+            Camera.main.transform.parent = hostPivot;
+
         } else {
             //PC.enabled = true;
             myPlayerID = PhotonNetwork.LocalPlayer.ActorNumber;
@@ -236,6 +244,18 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public override void OnCreateRoomFailed(short returnCode, string message) {
         outputString.text += "room failed " + message.ToString() + '\n';
+    }
+
+    private void LateUpdate() {
+        if (hostPivot.childCount > 0) {
+            hostPivot.transform.Rotate(Vector3.up * Time.deltaTime * 15f);
+
+            if(MVPView != null) {
+                hostPivot.position = Vector3.Lerp(hostPivot.position, MVPView.position, Time.deltaTime * 15f);
+            } else {
+                hostPivot.position = Vector3.Lerp(hostPivot.position, pivotStartPos, Time.deltaTime * 15f);
+            }
+        }
     }
 
     void Update()
@@ -419,12 +439,10 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             GameObject.Find("DBPiv").transform.GetChild(0).Translate(Vector3.back * Time.deltaTime * 10f);
         }
 
-
-        if (hasEndedGame) {
+        if (hasEndedGame && !isHost) {
             Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, spectatePos.position, Time.deltaTime * 5f);
             Camera.main.transform.rotation = Quaternion.Lerp(Camera.main.transform.rotation, spectatePos.rotation, Time.deltaTime * 5f);
         }
-
     }
 
         public void SyncTableRotations(Quaternion outRot, Quaternion midRot, Quaternion inRot) {
