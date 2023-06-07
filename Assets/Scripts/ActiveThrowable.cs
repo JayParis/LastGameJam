@@ -41,6 +41,9 @@ public class ActiveThrowable : MonoBehaviour
         if(PC != null && isActive) {
             PC.Bounce(collision);
             firstContact = true;
+
+            rb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
+            isActive = false;
         }
     }
 

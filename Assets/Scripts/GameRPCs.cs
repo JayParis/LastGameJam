@@ -29,6 +29,13 @@ public class GameRPCs : MonoBehaviour
 
     }
 
+    public void SyncTilt(Vector3 newHotspot, float newIntensity) {
+
+        PhotonView photonView = PhotonView.Get(this);
+        photonView.RPC("SyncTiltRPC", RpcTarget.All, newHotspot, newIntensity);
+
+    }
+
 
     [PunRPC]
     void FireShotRPC(int playerID, int throwableID) {
@@ -52,5 +59,14 @@ public class GameRPCs : MonoBehaviour
         NetworkManager.team_1_ScoreStatic = T1_Score;
         NetworkManager.team_2_ScoreStatic = T2_Score;
         //Debug.Log("SyncTable");
+
+        NM.HC.team_1_ScoreTMP.text = T1_Score.ToString();
+        NM.HC.team_2_ScoreTMP.text = T2_Score.ToString();
+    }
+
+
+    [PunRPC]
+    void SyncTiltRPC(Vector3 newHotspot, float newIntensity) {
+        NM.UpdateTilt(newHotspot, newIntensity);
     }
 }
