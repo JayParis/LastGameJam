@@ -64,6 +64,11 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public Transform tableIn;
     public Transform tiltPivot;
 
+    public Vector3 hotspot;
+    public Vector3 targetHotspot;
+    public float tiltPower = 0f;
+    public float targetTiltPower = 0f;
+
     //Score Bar
     public RawImage scoreBar_Top;
     public RawImage scoreBar_Mid;
@@ -74,6 +79,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     float testBarVal = 0f;
 
+    float currentBarVal = 0.5f;
     public Transform homeAwayPivot;
 
     void Start()
@@ -225,7 +231,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             TTC_TMP.text = "Connecting";
         } else if(gameState == 2) { //Select team
             TTC_TeamButtons.SetActive(true);
-            TTS_BG.transform.localRotation = Quaternion.Lerp(TTS_BG.transform.rotation, TTC_TargetRot.localRotation, Time.deltaTime * 16f);
+            TTS_BG.transform.localRotation = Quaternion.Lerp(TTS_BG.transform.rotation, TTC_TargetRot.localRotation, Time.deltaTime * 4.6f);//16f
             TTS_BG.transform.localScale = Vector3.Lerp(TTS_BG.transform.localScale, TTC_TargetRot.localScale, Time.deltaTime * 16f);
             //TTS_BG.material.SetFloat("_Lightness", Mathf.Lerp(TTS_BG.material.GetFloat("_Lightness"), 0.1f, Time.deltaTime * 7f));
             TTS_BG.material.SetFloat("_TeamSelect", Mathf.Lerp(TTS_BG.material.GetFloat("_TeamSelect"), 1f, Time.deltaTime * 7f));
@@ -266,6 +272,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
                 if(playTransitionTime > 3f && !hasSetupPC) {
                     PC.enabled = true;
                     RenderSettings.fogDensity = 0f;
+                    ScaleScoreBar();
                     hasSetupPC = true;
                 }
             }
@@ -273,7 +280,10 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             //Bar UI
         }
 
-        if((team_1_ScoreStatic + team_2_ScoreStatic) > 5 || 1 == 1) {
+        Vector3 finalBarPos = new Vector3(Screen.width * (1 - currentBarVal), scoreBar_Mid.transform.position.y, scoreBar_Mid.transform.position.z);
+        homeAwayPivot.position = finalBarPos;
+
+        if ((team_1_ScoreStatic + team_2_ScoreStatic) > 5 && scoreBar_Top.gameObject.activeSelf) {
             float biggest = 0;
             float smallest = 0;
             bool smallestIsTeam_1 = false;
@@ -291,13 +301,22 @@ public class NetworkManager : MonoBehaviourPunCallbacks
                 smallestIsTeam_1 = false;
             }
 
-            //float tilt_t = 0.025f;
+            float tilt_t = 0.95f; //1f = full team 1 win
+
+            if(smallestIsTeam_1)
+                tilt_t =  smallest / biggest;
+            else
+                tilt_t = 1 - (smallest / biggest);
+
+
+            currentBarVal = Mathf.Lerp(currentBarVal, tilt_t, Time.deltaTime * 4f);
             //Debug.Log(testBarVal);
             //float tilt_t = Mathf.Clamp01(testBarVal);
-            float tilt_t = (Mathf.Sin(Time.time * 0.5f) + 1) / 2f       ;
 
-            Quaternion tilt_q_1 = Quaternion.Lerp(barTilt_L.rotation, barTilt_R.rotation, tilt_t);
-            Quaternion tilt_q_2 = Quaternion.Lerp(barTilt_L.rotation, barTilt_R.rotation, 1-tilt_t);
+            //float tilt_t = (Mathf.Sin(Time.time * 0.5f) + 1) / 2f       ;
+
+            Quaternion tilt_q_1 = Quaternion.Lerp(barTilt_L.rotation, barTilt_R.rotation, currentBarVal);
+            Quaternion tilt_q_2 = Quaternion.Lerp(barTilt_L.rotation, barTilt_R.rotation, 1- currentBarVal);
 
             scoreBar_Top.transform.rotation = Quaternion.Lerp(scoreBar_Top.transform.rotation, tilt_q_1, Time.deltaTime * 15f);
             scoreBar_Bottom.transform.rotation = Quaternion.Lerp(scoreBar_Bottom.transform.rotation, tilt_q_2, Time.deltaTime * 15f);
@@ -306,14 +325,19 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             scoreBar_Mid.transform.GetChild(0).rotation = TTC_CentrePos.rotation;
             scoreBar_Bottom.transform.GetChild(0).rotation = TTC_CentrePos.rotation;
 
-            Vector3 finalBarPos = new Vector3(Screen.width * (1 - tilt_t), scoreBar_Mid.transform.position.y, scoreBar_Mid.transform.position.z);
-
             scoreBar_Top.transform.GetChild(0).position = finalBarPos;
             scoreBar_Mid.transform.GetChild(0).position = finalBarPos;
             scoreBar_Bottom.transform.GetChild(0).position = finalBarPos;
 
-            homeAwayPivot.position = finalBarPos;
+
+            
         }
+
+        hotspot = Vector3.Lerp(hotspot, targetHotspot, Time.deltaTime * 2f);
+        tiltPower = Mathf.Lerp(tiltPower, targetTiltPower, Time.deltaTime * 2f);
+
+        tiltPivot.eulerAngles = new Vector3(hotspot.z, 0, hotspot.x * -1) * tiltPower;
+
 
 
         //Debug ----
@@ -329,18 +353,13 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             gameState = 0;
         }
         if (Input.GetKeyDown(KeyCode.Q)) {
-            gameState = 2;
             //Vector3 pos = TTC_TMP.transform.TransformPoint(TTC_TMP.mesh.vertices[0]);
             //GameObject.Find("DBPOS").transform.position = pos;
+
+            
         }
         if (Input.GetKey(KeyCode.D)) {
-            GameObject dbpiv = GameObject.Find("DBPiv");
-            dbpiv.transform.Rotate(Vector3.forward * 150 * Time.deltaTime);
-            Vector3 hotspot = dbpiv.transform.GetChild(0).position;
-
-            float tintIntensity = 0.5f;
-            tiltPivot.eulerAngles = new Vector3(hotspot.z, 0, hotspot.x * -1) * tintIntensity;
-            Camera.main.fieldOfView = 110;
+            
         }
         if (Input.GetKey(KeyCode.W)) {
             GameObject.Find("DBPiv").transform.GetChild(0).Translate(Vector3.forward * Time.deltaTime * 10f);
@@ -348,10 +367,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         if (Input.GetKey(KeyCode.S)) {
             GameObject.Find("DBPiv").transform.GetChild(0).Translate(Vector3.back * Time.deltaTime * 10f);
         }
-        if (Input.GetKey(KeyCode.UpArrow))
-            testBarVal += Time.deltaTime;
-        if (Input.GetKey(KeyCode.DownArrow))
-            testBarVal -= Time.deltaTime;
+        
     }
 
         public void SyncTableRotations(Quaternion outRot, Quaternion midRot, Quaternion inRot) {
@@ -391,5 +407,37 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         TTC_TeamButtons.SetActive(false);
         gameState = 3;
         isTeam_1 = false;
+    }
+
+    public void ScaleScoreBar() {
+        scoreBar_Top.gameObject.SetActive(true);
+        scoreBar_Mid.gameObject.SetActive(true);
+        scoreBar_Bottom.gameObject.SetActive(true);
+        homeAwayPivot.gameObject.SetActive(true);
+
+        float barDist = barTilt_L.transform.position.x - barTilt_R.transform.position.x;
+        float screenDist = TL.position.x - BR.position.x;
+
+        float mod = screenDist / barDist;
+        scoreBar_Top.transform.parent.localScale = Vector3.one * mod;
+
+        scoreBar_Top.transform.parent.localPosition = new Vector3(0, Screen.height * -0.113f, 0);
+
+        scoreBar_Top.transform.GetChild(0).GetComponent<RawImage>().color = team_1_Colour;
+        scoreBar_Mid.transform.GetChild(0).GetComponent<RawImage>().color = team_1_Colour;
+        scoreBar_Bottom.transform.GetChild(0).GetComponent<RawImage>().color = team_1_Colour;
+
+        scoreBar_Top.color = team_2_Colour;
+        scoreBar_Mid.color = team_2_Colour;
+        scoreBar_Bottom.color = team_2_Colour;
+    }
+
+    public void UpdateTilt(Vector3 targetCoG, float targetIntensity) {
+        //GameObject dbpiv = GameObject.Find("DBPiv");
+        //dbpiv.transform.Rotate(Vector3.forward * 150 * Time.deltaTime);
+
+        targetHotspot = targetCoG;
+        targetTiltPower = targetIntensity;
+        Debug.Log("Tilt_" + targetIntensity);
     }
 }

@@ -31,6 +31,7 @@ public class HostController : MonoBehaviour
             periodicTableUpdate -= Time.deltaTime;
         } else {
             NM.RPC.SyncTable(NM.tableOut.rotation, NM.tableMid.rotation, NM.tableIn.rotation);
+            CalculateWeight();
             periodicTableUpdate = 3f;
         }
 
@@ -61,9 +62,34 @@ public class HostController : MonoBehaviour
         }
         NM.RPC.SyncScore(Team_1_Score, Team_2_Score);
 
-        Debug.Log("Calc points: " + Team_1_Score.ToString() + " | " + Team_2_Score.ToString());
+        //Debug.Log("Calc points: " + Team_1_Score.ToString() + " | " + Team_2_Score.ToString());
 
         team_1_ScoreTMP.text = Team_1_Score.ToString();
         team_2_ScoreTMP.text = Team_2_Score.ToString();
+    }
+
+    public void CalculateWeight() {
+        //List<Vector3> weightPositions = new List<Vector3>();
+
+        Vector3 avgPos = Vector3.zero;
+        int counts = 0;
+
+        foreach (ActiveThrowable AT in thrownItemsTrans.GetComponentsInChildren<ActiveThrowable>()) {
+            if(AT.transform.position.y > 5f && AT.transform.position.y < 15) {
+                //weightPositions.Add(AT.transform.position);
+                avgPos += AT.transform.position;
+                counts++;
+            }
+        }
+
+        if (counts > 2) {
+            Vector3 finalPos = avgPos / counts;
+
+            NM.RPC.SyncTilt(finalPos, counts * 0.25f); //2 is too much
+        } else {
+            NM.RPC.SyncTilt(Vector3.zero, 0);
+        }
+        //GameObject.Find("_AVG").transform.position = finalPos;
+
     }
 }

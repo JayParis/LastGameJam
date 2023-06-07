@@ -63,6 +63,8 @@ public class PlayerController : MonoBehaviour
     public LayerMask collisionLayerMask;
     public GameObject dropshadow;
 
+    public List<string> allThrowables;
+
     private void Awake() {
         //Application.targetFrameRate = 60;
         inputManager = InputManager.Instance;
@@ -258,8 +260,9 @@ public class PlayerController : MonoBehaviour
 
         throwable.GetComponent<ActiveThrowable>().Deactivate();
 
+        string spawnItemName = allThrowables[Random.Range(0, allThrowables.Count)];
 
-        GameObject newThrowable = PhotonNetwork.Instantiate("RugbyBall", throwableStartPos.position, throwableStartPos.rotation);
+        GameObject newThrowable = PhotonNetwork.Instantiate(spawnItemName, throwableStartPos.position, throwableStartPos.rotation);
         newThrowable.tag = NetworkManager.isTeam_1 ? "Team_1" : "Team_2";
         throwable = newThrowable.GetComponent<Rigidbody>();
         //newThrowable.transform.parent = NM.thrownItems[NetworkManager.myPlayerID - 1].transform;
