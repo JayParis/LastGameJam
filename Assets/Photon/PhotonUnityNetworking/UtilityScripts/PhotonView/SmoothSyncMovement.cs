@@ -22,6 +22,7 @@ namespace Photon.Pun.UtilityScripts
     public class SmoothSyncMovement : Photon.Pun.MonoBehaviourPun, IPunObservable
     {
         public float SmoothingDelay = 5;
+        bool hasSetParent = false;
         public void Awake()
         {
             bool observed = false;
@@ -46,17 +47,31 @@ namespace Photon.Pun.UtilityScripts
                 //We own this player: send the others our data
                 stream.SendNext(transform.position);
                 stream.SendNext(transform.rotation);
+                stream.SendNext(gameObject.tag == "Team_1");
             }
             else
             {
                 //Network player, receive data
                 correctPlayerPos = (Vector3)stream.ReceiveNext();
                 correctPlayerRot = (Quaternion)stream.ReceiveNext();
+                isTeam_1 = (bool)stream.ReceiveNext();
+
+                if (!hasSetParent) {
+                    //Debug.Log(photonView.ViewID);
+
+                    string idstr = photonView.ViewID.ToString();
+                    int len = idstr.Length >= 5 ? 2 : 1;
+                    int finalID = int.Parse(idstr.Substring(0, len));
+                    gameObject.SendMessage("SetThrownParent", finalID, SendMessageOptions.DontRequireReceiver);
+                    gameObject.SendMessage("SetIsTeam_1", isTeam_1, SendMessageOptions.DontRequireReceiver);
+                    hasSetParent = true;
+                }
             }
         }
 
         private Vector3 correctPlayerPos = Vector3.zero; //We lerp towards this
         private Quaternion correctPlayerRot = Quaternion.identity; //We lerp towards this
+        public bool isTeam_1 = false;
 
         public void Update()
         {
@@ -66,6 +81,7 @@ namespace Photon.Pun.UtilityScripts
                 transform.position = Vector3.Lerp(transform.position, correctPlayerPos, Time.deltaTime * this.SmoothingDelay);
                 transform.rotation = Quaternion.Lerp(transform.rotation, correctPlayerRot, Time.deltaTime * this.SmoothingDelay);
             }
+
         }
 
     }

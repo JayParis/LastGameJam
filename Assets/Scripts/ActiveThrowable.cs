@@ -6,6 +6,7 @@ public class ActiveThrowable : MonoBehaviour
 {
     public PlayerController PC;
     bool isActive = true;
+    bool isTeam_1 = false;
 
     public Transform myDropshadow;
     public Rigidbody rb;
@@ -45,5 +46,18 @@ public class ActiveThrowable : MonoBehaviour
 
     public void Deactivate() {
         isActive = false;
+    }
+
+    public void SetThrownParent(int id) {
+        transform.parent = GameObject.Find("_GLOBAL").GetComponent<NetworkManager>().thrownItems[id - 1].transform;
+        //this.enabled = false;
+        isActive = false;
+    }
+
+    public void SetIsTeam_1(bool itemIsTeam_1) {
+        isTeam_1 = itemIsTeam_1;
+        foreach (Renderer Rend in GetComponentsInChildren<Renderer>()) {
+            Rend.material.color = isTeam_1 ? NetworkManager.team_1_Colour : NetworkManager.team_2_Colour;
+        }
     }
 }

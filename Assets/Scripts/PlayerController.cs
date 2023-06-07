@@ -4,10 +4,13 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using TMPro;
+using Photon.Pun;
+using Photon.Realtime;
 
 public class PlayerController : MonoBehaviour
 {
     public NetworkManager NM;
+    public GameRPCs RPC;
 
     public AnimationCurve throwRemap;
     public float lateralSensitivity = 1f;
@@ -124,7 +127,7 @@ public class PlayerController : MonoBehaviour
         //Debug---
 
         if (Input.GetKeyDown(KeyCode.Y)) {
-            SetSpawn(Random.Range(0,32));
+            //SetSpawn(Random.Range(0,32));
         }
 
         lookCamPos.LookAt(throwable.transform.position);
@@ -239,6 +242,8 @@ public class PlayerController : MonoBehaviour
         throwable.velocity = Camera.main.transform.TransformDirection(new Vector3(xVal * -0.59f * lateralSensitivity, 0.56f, 1f)) * 12f * throwRemap.Evaluate(speed);
         throwable.angularVelocity = Vector3.one * speed;
         thrown = true;
+
+        RPC.FireShot(NetworkManager.myPlayerID, 0);
     }
 
     public void ResetThrowable() {
@@ -253,8 +258,11 @@ public class PlayerController : MonoBehaviour
 
         throwable.GetComponent<ActiveThrowable>().Deactivate();
 
-        GameObject newThrowable = Instantiate(nextItem, throwableStartPos.position, throwableStartPos.rotation);
+
+        GameObject newThrowable = PhotonNetwork.Instantiate("RugbyBall", throwableStartPos.position, throwableStartPos.rotation);
+        //newThrowable.GetComponent<Rigidbody>();
         throwable = newThrowable.GetComponent<Rigidbody>();
+        //newThrowable.transform.parent = NM.thrownItems[NetworkManager.myPlayerID - 1].transform;
 
         throwable.transform.position = throwableStartPos.position;
         throwable.transform.rotation = throwableStartPos.rotation;
@@ -295,9 +303,9 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void SetSpawn(int playerID) {
-        transform.parent.eulerAngles = new Vector3(transform.parent.eulerAngles.x, NM.spawns[playerID].eulerAngles.y, transform.parent.eulerAngles.z);
-    }
+    //public void SetSpawn(int playerID) {
+    //    transform.parent.eulerAngles = new Vector3(transform.parent.eulerAngles.x, NM.spawns[playerID].eulerAngles.y, transform.parent.eulerAngles.z);
+    //}
 
     //UI ----
 
