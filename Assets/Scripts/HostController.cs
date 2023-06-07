@@ -32,6 +32,7 @@ public class HostController : MonoBehaviour
         } else {
             NM.RPC.SyncTable(NM.tableOut.rotation, NM.tableMid.rotation, NM.tableIn.rotation);
             CalculateWeight();
+            NM.RPC.SyncTime(NM.gameTimer);
             periodicTableUpdate = 3f;
         }
 
@@ -85,7 +86,7 @@ public class HostController : MonoBehaviour
         if (counts > 2) {
             Vector3 finalPos = avgPos / counts;
 
-            NM.RPC.SyncTilt(finalPos, counts * 0.25f); //2 is too much
+            NM.RPC.SyncTilt(finalPos, counts * 0.1f); //2 is too much
         } else {
             NM.RPC.SyncTilt(Vector3.zero, 0);
         }

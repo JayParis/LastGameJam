@@ -36,6 +36,13 @@ public class GameRPCs : MonoBehaviour
 
     }
 
+    public void SyncTime(float newTime) {
+
+        PhotonView photonView = PhotonView.Get(this);
+        photonView.RPC("SyncTimeRPC", RpcTarget.All, newTime);
+
+    }
+
 
     [PunRPC]
     void FireShotRPC(int playerID, int throwableID) {
@@ -68,5 +75,12 @@ public class GameRPCs : MonoBehaviour
     [PunRPC]
     void SyncTiltRPC(Vector3 newHotspot, float newIntensity) {
         NM.UpdateTilt(newHotspot, newIntensity);
+    }
+
+    [PunRPC]
+    void SyncTimeRPC(float newTime) {
+        if(!NetworkManager.isHost)
+            NM.gameTimer = newTime;
+        NM.gameStarted = true;
     }
 }

@@ -82,6 +82,12 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     float currentBarVal = 0.5f;
     public Transform homeAwayPivot;
 
+
+    public bool gameStarted = false;
+    public float gameTimer = 120f;
+    public TextMeshProUGUI timerTPM;
+
+
     void Start()
     {
         if (forceMobile)
@@ -155,6 +161,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     }
     public override void OnJoinedRoom() {
         outputString.text += "room joined " + this.ToString() + '\n';
+        RPC.SyncTime(gameTimer);
 
         if (isHost) {
             HC.enabled = true;
@@ -164,7 +171,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
             gameState = 10;
 
-
+            gameStarted = true;
 
         } else {
             //PC.enabled = true;
@@ -269,10 +276,11 @@ public class NetworkManager : MonoBehaviourPunCallbacks
                     hasSetupFirstThrowable = true;
                 }
 
-                if(playTransitionTime > 3f && !hasSetupPC) {
+                if(playTransitionTime > 2.33f && !hasSetupPC) {
                     PC.enabled = true;
                     RenderSettings.fogDensity = 0f;
                     ScaleScoreBar();
+                    gameStarted = true;
                     hasSetupPC = true;
                 }
             }
@@ -338,6 +346,12 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
         tiltPivot.eulerAngles = new Vector3(hotspot.z, 0, hotspot.x * -1) * tiltPower;
 
+        if (gameStarted) {
+            gameTimer -= Time.deltaTime;  //time is a float
+            int seconds = ((int)gameTimer % 60);
+            int minutes = ((int)gameTimer / 60);
+            timerTPM.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+        }
 
 
         //Debug ----
