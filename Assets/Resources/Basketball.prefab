@@ -134,6 +134,7 @@ MonoBehaviour:
   isTeam_1: 0
   myDropshadow: {fileID: 0}
   rb: {fileID: 0}
+  thisItemsScore: 0
 --- !u!114 &8452683094668179750
 MonoBehaviour:
   m_ObjectHideFlags: 0

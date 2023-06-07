@@ -43,6 +43,13 @@ public class GameRPCs : MonoBehaviour
 
     }
 
+    public void GameFinished() {
+
+        PhotonView photonView = PhotonView.Get(this);
+        photonView.RPC("GameFinishedRPC", RpcTarget.All);
+
+    }
+
 
     [PunRPC]
     void FireShotRPC(int playerID, int throwableID) {
@@ -82,5 +89,11 @@ public class GameRPCs : MonoBehaviour
         if(!NetworkManager.isHost)
             NM.gameTimer = newTime;
         NM.gameStarted = true;
+    }
+
+    //
+    [PunRPC]
+    void GameFinishedRPC() {
+        NM.GameFinished();
     }
 }

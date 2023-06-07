@@ -23,6 +23,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public GameRPCs RPC;
 
     public static int myPlayerID = 0;
+    public static string myPlayerName = "Player 1";
 
     int gameState = 0;
 
@@ -36,6 +37,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public static Color team_2_Colour;
     public static int team_1_ScoreStatic = 0;
     public static int team_2_ScoreStatic = 0;
+
+    public List<string> playerNames;
 
     //Menus
     public Gradient menuGrad;
@@ -56,6 +59,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     float playTransitionTime = 0f;
     bool hasSetupPC = false;
     bool hasSetupFirstThrowable = false;
+
+    public TextMeshProUGUI playerNameTMP;
 
     //Table
 
@@ -84,9 +89,13 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
 
     public bool gameStarted = false;
-    public float gameTimer = 120f;
+    public float gameTimer = 20f;//120f
     public TextMeshProUGUI timerTPM;
 
+    public bool hasEndedGame = false;
+    bool team_1_Wins = false;
+
+    public GameObject backOutButton;
 
     void Start()
     {
@@ -163,6 +172,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         outputString.text += "room joined " + this.ToString() + '\n';
         RPC.SyncTime(gameTimer);
 
+        
+
         if (isHost) {
             HC.enabled = true;
 
@@ -176,6 +187,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         } else {
             //PC.enabled = true;
             myPlayerID = PhotonNetwork.LocalPlayer.ActorNumber;
+
             SetSpawn(myPlayerID - 1);
 
             gameState = 2;
@@ -184,6 +196,10 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             seed = (int)PhotonNetwork.CurrentRoom.CustomProperties["Seed"];
             mapID = (int)PhotonNetwork.CurrentRoom.CustomProperties["MapID"];
             colourID = (int)PhotonNetwork.CurrentRoom.CustomProperties["ColourID"];
+
+            myPlayerName = GetPlayerName(myPlayerID - 1);
+            playerNameTMP.text = myPlayerName;
+
 
             switch (colourID) {
                 case 0:
@@ -199,10 +215,14 @@ public class NetworkManager : MonoBehaviourPunCallbacks
                     team_2_Colour = teamColours[5];
                     break;
             }
-            
+
+            outputString.text += "Player connected" + '\n';
+
 
             //outputString.text += "owning player: " + PhotonNetwork.LocalPlayer.ActorNumber.ToString() + this.ToString() + '\n';
         }
+
+        
 
         outputString.text += "Seed param = " + PhotonNetwork.CurrentRoom.CustomProperties["Seed"].ToString() + '\n';
         outputString.text += "MapID param = " + PhotonNetwork.CurrentRoom.CustomProperties["MapID"].ToString() + '\n';
@@ -215,7 +235,10 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     void Update()
     {
-        if(gameState == 0 || gameState == 1) {
+        backOutButton.SetActive(gameState == 1);
+
+
+        if (gameState == 0 || gameState == 1) {
             gradSamplePoint += Time.deltaTime * (gameState == 0 ? 0.06f : 0.35f);
             if (gradSamplePoint >= 1f)
                 gradSamplePoint = 0f;
@@ -347,10 +370,19 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         tiltPivot.eulerAngles = new Vector3(hotspot.z, 0, hotspot.x * -1) * tiltPower;
 
         if (gameStarted) {
-            gameTimer -= Time.deltaTime;  //time is a float
+            timerTPM.enabled = true;
+            if(!hasEndedGame)
+                gameTimer -= Time.deltaTime;  //time is a float
             int seconds = ((int)gameTimer % 60);
             int minutes = ((int)gameTimer / 60);
             timerTPM.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+
+            if(gameTimer <= 0 && !hasEndedGame) {
+                RPC.GameFinished();
+
+
+                hasEndedGame = true;
+            }
         }
 
 
@@ -402,9 +434,10 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     }
 
     public void TTCButton() {
-        gameState = 1;
-        ConnectToGame();
-
+        if (gameState == 0) {
+            ConnectToGame();
+            gameState = 1;
+        }
     }
 
     public void Team1Button() {
@@ -453,5 +486,27 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         targetHotspot = targetCoG;
         targetTiltPower = targetIntensity;
         Debug.Log("Tilt_" + targetIntensity);
+    }
+
+    public void GameFinished() {
+        team_1_Wins = team_1_ScoreStatic >= team_2_ScoreStatic;
+
+        if (isHost) {
+
+        } else {
+
+        }
+    }
+
+    public string GetPlayerName(int PlayerID) {
+        string resultName = "";
+        resultName = playerNames[(seed + PlayerID) % 32];
+        return resultName;
+    }
+
+    public void BackOutButton() {
+        if(PhotonNetwork.IsConnected)
+            PhotonNetwork.Disconnect();
+        gameState = 0;
     }
 }

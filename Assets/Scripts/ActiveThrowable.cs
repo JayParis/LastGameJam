@@ -12,6 +12,7 @@ public class ActiveThrowable : MonoBehaviour
     public Rigidbody rb;
 
     bool firstContact = false;
+    public int thisItemsScore = 0;
 
     void Start()
     {

@@ -19,6 +19,7 @@ public class HostController : MonoBehaviour
     public TextMeshProUGUI team_1_ScoreTMP;
     public TextMeshProUGUI team_2_ScoreTMP;
 
+    public List<int> playerScores;
 
     void Start()
     {
@@ -33,7 +34,10 @@ public class HostController : MonoBehaviour
             NM.RPC.SyncTable(NM.tableOut.rotation, NM.tableMid.rotation, NM.tableIn.rotation);
             CalculateWeight();
             NM.RPC.SyncTime(NM.gameTimer);
+
+            CalculateMVPS();
             periodicTableUpdate = 3f;
+
         }
 
         if (periodicPointsUpdate > 0) {
@@ -58,6 +62,7 @@ public class HostController : MonoBehaviour
                     else
                         Team_2_Score += hit.collider.GetComponent<ScoreVal>().points;
 
+                    AT.thisItemsScore = hit.collider.GetComponent<ScoreVal>().points;
                 }
             }
         }
@@ -92,5 +97,36 @@ public class HostController : MonoBehaviour
         }
         //GameObject.Find("_AVG").transform.position = finalPos;
 
+    }
+
+    public void CalculateMVPS() {
+
+        for (int i = 0; i < playerScores.Count; i++) {
+            playerScores[i] = 0;
+        }
+
+        int team_1_MVP = 0;
+        int team_2_MVP = 0;
+
+        for (int i = 0; i < NM.thrownItems.Count; i++) {
+            foreach (ActiveThrowable AT in NM.thrownItems[i].GetComponentsInChildren<ActiveThrowable>()) {
+                playerScores[i] += AT.thisItemsScore;
+            }
+        }
+
+        int biggestVal = 0;
+        int bestPlayer = 0;
+
+        for (int i = 0; i < playerScores.Count; i++) {
+            if(playerScores[i] >= biggestVal) {
+                biggestVal = playerScores[i];
+                bestPlayer = i;
+            }
+        }
+        if(biggestVal >= 5) {
+            bool MVPisTeam_1 = NM.thrownItems[bestPlayer].GetChild(0).GetComponent<ActiveThrowable>().isTeam_1;
+        }
+
+        Debug.Log("Winning Player = " + NM.GetPlayerName(bestPlayer));
     }
 }
