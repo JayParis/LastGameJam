@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
+using UnityEngine.SceneManagement;
 
 public class GameRPCs : MonoBehaviour
 {
@@ -50,6 +51,12 @@ public class GameRPCs : MonoBehaviour
 
     }
 
+    public void ResetAllPlayers() {
+        PhotonView photonView = PhotonView.Get(this);
+        photonView.RPC("ResetAllPlayersRPC", RpcTarget.All);
+
+    }
+
 
     [PunRPC]
     void FireShotRPC(int playerID, int throwableID) {
@@ -75,7 +82,9 @@ public class GameRPCs : MonoBehaviour
         //Debug.Log("SyncTable");
 
         NM.HC.team_1_ScoreTMP.text = T1_Score.ToString();
+        NM.HC.team_1_ScoreTMP_BG.text = T1_Score.ToString();
         NM.HC.team_2_ScoreTMP.text = T2_Score.ToString();
+        NM.HC.team_2_ScoreTMP_BG.text = T2_Score.ToString();
     }
 
 
@@ -95,5 +104,11 @@ public class GameRPCs : MonoBehaviour
     [PunRPC]
     void GameFinishedRPC() {
         NM.GameFinished();
+    }
+
+    [PunRPC]
+    void ResetAllPlayersRPC() {
+        PhotonNetwork.Disconnect();
+        SceneManager.LoadScene(0);
     }
 }

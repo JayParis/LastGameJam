@@ -17,7 +17,9 @@ public class HostController : MonoBehaviour
     public Transform thrownItemsTrans;
 
     public TextMeshProUGUI team_1_ScoreTMP;
+    public TextMeshProUGUI team_1_ScoreTMP_BG;
     public TextMeshProUGUI team_2_ScoreTMP;
+    public TextMeshProUGUI team_2_ScoreTMP_BG;
 
     public List<int> playerScores;
 

@@ -135,7 +135,7 @@ public class PlayerController : MonoBehaviour
         lookCamPos.LookAt(throwable.transform.position);
 
         if (!camFollow && thrown)
-            zoomFoV = Mathf.Lerp(zoomFoV, 32f, Time.deltaTime * 0.5f);
+            zoomFoV = Mathf.Lerp(zoomFoV, 32f, Time.deltaTime * (bounceMarkID > 0 ? 3.5f : 0.5f));
         else
             zoomFoV = 60f;
 

@@ -96,6 +96,9 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     bool team_1_Wins = false;
 
     public GameObject backOutButton;
+    public GameObject nameNotch;
+
+    public Transform spectatePos;
 
     void Start()
     {
@@ -197,6 +200,8 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             mapID = (int)PhotonNetwork.CurrentRoom.CustomProperties["MapID"];
             colourID = (int)PhotonNetwork.CurrentRoom.CustomProperties["ColourID"];
 
+            nameNotch.SetActive(true);
+
             myPlayerName = GetPlayerName(myPlayerID - 1);
             playerNameTMP.text = myPlayerName;
 
@@ -292,7 +297,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
                 Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, 
                     PC.throwableStartPos.position + PC.transform.parent.TransformDirection(new Vector3(0, 3f, -3f)), Time.deltaTime * 3.6f);
                 Camera.main.transform.rotation = Quaternion.Lerp(Camera.main.transform.rotation, PC.throwableCamPos.rotation, Time.deltaTime * 3.6f);
-                RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0f, Time.deltaTime * 5f);
+                RenderSettings.fogDensity = Mathf.Lerp(RenderSettings.fogDensity, 0f, Time.deltaTime * 2.5f);
 
                 if(playTransitionTime > 1f && !hasSetupFirstThrowable) {
                     PC.ResetThrowable();
@@ -377,7 +382,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
             int minutes = ((int)gameTimer / 60);
             timerTPM.text = string.Format("{0:00}:{1:00}", minutes, seconds);
 
-            if(gameTimer <= 0 && !hasEndedGame) {
+            if(gameTimer <= 0 && !hasEndedGame && isHost) {
                 RPC.GameFinished();
 
 
@@ -413,7 +418,13 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         if (Input.GetKey(KeyCode.S)) {
             GameObject.Find("DBPiv").transform.GetChild(0).Translate(Vector3.back * Time.deltaTime * 10f);
         }
-        
+
+
+        if (hasEndedGame) {
+            Camera.main.transform.position = Vector3.Lerp(Camera.main.transform.position, spectatePos.position, Time.deltaTime * 5f);
+            Camera.main.transform.rotation = Quaternion.Lerp(Camera.main.transform.rotation, spectatePos.rotation, Time.deltaTime * 5f);
+        }
+
     }
 
         public void SyncTableRotations(Quaternion outRot, Quaternion midRot, Quaternion inRot) {
@@ -477,6 +488,9 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         scoreBar_Top.color = team_2_Colour;
         scoreBar_Mid.color = team_2_Colour;
         scoreBar_Bottom.color = team_2_Colour;
+
+        HC.team_1_ScoreTMP_BG.color = team_1_Colour;
+        HC.team_2_ScoreTMP_BG.color = team_2_Colour;
     }
 
     public void UpdateTilt(Vector3 targetCoG, float targetIntensity) {
@@ -490,11 +504,12 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
     public void GameFinished() {
         team_1_Wins = team_1_ScoreStatic >= team_2_ScoreStatic;
+        hasEndedGame = true;
 
         if (isHost) {
 
         } else {
-
+            PC.enabled = false;
         }
     }
 
